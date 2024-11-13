@@ -139,4 +139,3 @@ class SASRec(torch.nn.Module):
         logits = item_embs.matmul(final_feat.unsqueeze(-1)).squeeze(-1)
 
         return logits
-

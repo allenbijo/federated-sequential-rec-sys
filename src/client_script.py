@@ -41,13 +41,13 @@ def main():
     client_no = client_name.split('-')[1]
     print("Client "+client_name)
 
-    text_file_path=f'/home/reuben/reuben_code/Pytorch/LLM-Rec-Sys/FedSasrec/data/amazon/split_data_part{client_no}.txt'
+    text_file_path=f'/home/reuben/reuben_code/Pytorch/LLM-Rec-Sys/FedSasrec/data/amazon/{args.dataset}.txt'
     
     # Check if the file exists
     if not os.path.exists(text_file_path):
         print(f"File {text_file_path} not found. Running preprocess function...")
         preprocess(args.dataset)  # Call preprocess function if file doesn't exist
-    dataset = data_partition(f'split_data_part{client_no}')
+    dataset = data_partition(f'{args.dataset}')
     [user_train, user_valid, user_test, usernum, itemnum] = dataset
 
     print('user num:', usernum, 'item num:', itemnum)
