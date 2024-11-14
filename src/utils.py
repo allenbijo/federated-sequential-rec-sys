@@ -276,3 +276,76 @@ def evaluate_valid(model, dataset, args):
             print('.', end="")
             sys.stdout.flush()
     return NDCG / valid_user, HT / valid_user
+
+
+def evaluate_valid_at_k(model, dataset, maxlen, k=10):
+    [train, valid, test, usernum, itemnum] = copy.deepcopy(dataset)
+    
+    NDCG = 0.0
+    HT = 0.0
+    precision = 0.0
+    recall = 0.0
+    valid_user = 0.0
+
+    if usernum > 10000:
+        users = random.sample(range(1, usernum + 1), 10000)
+    else:
+        users = range(1, usernum + 1)
+
+    for u in users:
+        if len(train[u]) < 1 or len(valid[u]) < 1: 
+            continue
+
+        seq = np.zeros([maxlen], dtype=np.int32)
+        idx = maxlen - 1
+        for i in reversed(train[u]):
+            seq[idx] = i
+            idx -= 1
+            if idx == -1: break
+
+        rated = set(train[u])
+        rated.add(0)
+        item_idx = [valid[u][0]]
+        
+        for _ in range(100):
+            t = np.random.randint(1, itemnum + 1)
+            while t in rated: 
+                t = np.random.randint(1, itemnum + 1)
+            item_idx.append(t)
+
+        # Move predictions to CPU before using NumPy operations
+        predictions = -model.predict(*[np.array(l) for l in [[u], [seq], item_idx]]).cpu().numpy()
+        predictions = predictions[0]
+
+        # Get top-k items and move to CPU
+        top_k_items = predictions.argsort()[:k]
+
+        # Check if the validation item is in the top-k predictions
+        if valid[u][0] in [item_idx[i] for i in top_k_items]:
+            rank = np.where(top_k_items == 0)[0][0]
+            NDCG += 1 / np.log2(rank + 2)
+            HT += 1
+
+        # Precision, Recall, and F1 calculations
+        relevant = [item_idx[0]]
+        recommended = [item_idx[i] for i in top_k_items]
+        num_relevant_and_recommended = len(set(recommended) & set(relevant))
+        num_relevant = len(relevant)
+        num_recommended = len(recommended)
+
+        if num_relevant > 0:
+            precision += num_relevant_and_recommended / num_recommended
+            recall += num_relevant_and_recommended / num_relevant
+        valid_user += 1
+
+        if valid_user % 100 == 0:
+            print('.', end="")
+            sys.stdout.flush()
+
+    precision /= valid_user
+    recall /= valid_user
+    F1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+    NDCG /= valid_user
+    HT /= valid_user
+
+    return NDCG, HT, precision, recall, F1

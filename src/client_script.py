@@ -3,6 +3,7 @@ import time
 import torch
 import argparse
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 import json
 
@@ -15,8 +16,8 @@ from nvflare.client.tracking import SummaryWriter
 
 # Setup argument parsing for SASRec-specific hyperparameters
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', default='Movies_and_TV')
-parser.add_argument('--batch_size', default=128, type=int)
+parser.add_argument('--dataset', default='Movie_Lens')
+parser.add_argument('--batch_size', default=16, type=int)
 parser.add_argument('--lr', default=0.001, type=float)
 parser.add_argument('--maxlen', default=50, type=int)
 parser.add_argument('--hidden_units', default=50, type=int)
@@ -41,13 +42,18 @@ def main():
     client_no = client_name.split('-')[1]
     print("Client "+client_name)
 
-    text_file_path=f'/home/reuben/reuben_code/Pytorch/LLM-Rec-Sys/FedSasrec/data/amazon/{args.dataset}.txt'
-    
+    if(args.dataset=='Movies_and_TV'):
+        text_file_path=f'/home/reuben/reuben_code/Pytorch/LLM-Rec-Sys/FedSasrec/data/amazon/{args.dataset}.txt'
+    elif(args.dataset=='CiteULike'):
+        text_file_path=f'/home/reuben/reuben_code/Pytorch/LLM-Rec-Sys/FedSasrec/data/CiteULike/output.txt'
+    elif(args.dataset=='Movie_Lens'):
+        text_file_path=f'/home/reuben/reuben_code/Pytorch/LLM-Rec-Sys/FedSasrec/data/Movie_Lens/output2.txt'
+
     # Check if the file exists
     if not os.path.exists(text_file_path):
         print(f"File {text_file_path} not found. Running preprocess function...")
         preprocess(args.dataset)  # Call preprocess function if file doesn't exist
-    dataset = data_partition(f'{args.dataset}')
+    dataset = data_partition(f'{args.dataset}',text_file_path)
     [user_train, user_valid, user_test, usernum, itemnum] = dataset
 
     print('user num:', usernum, 'item num:', itemnum)

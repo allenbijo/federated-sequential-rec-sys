@@ -51,8 +51,10 @@ if __name__ == "__main__":
     n_clients = 3
     num_rounds = 2
     train_script = "src/client_script.py"
-    usernum = 311143
-    itemnum = 86678
+    # usernum = 311143
+    usernum = 6038
+    # itemnum = 86678
+    itemnum=3627
 
     arg_handler = json.dumps(arg.__dict__)
 
