@@ -330,7 +330,7 @@ def evaluate_valid_at_k(model, dataset, args, k=10):
         
         # valid_user += 1
 
-        if rank < 10:
+        if rank < k:
             NDCG += 1 / np.log2(rank + 2)
             HT += 1
 
