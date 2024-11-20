@@ -28,7 +28,7 @@ parser.add_argument('--state_dict_path', default=None, type=str)
 arg = parser.parse_args()
 
 if __name__ == "__main__":
-    n_clients = 1
+    n_clients = 3
     num_rounds = 2
     train_script = "src/client_script.py"
     
