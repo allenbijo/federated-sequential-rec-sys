@@ -9,20 +9,20 @@ import json
 
 from model import SASRec 
 from data_preprocess import preprocess
-from utils import evaluate, evaluate_valid, data_partition, WarpSampler
+from utils import evaluate, evaluate_valid_at_k, data_partition, WarpSampler
 
 import nvflare.client as flare
 from nvflare.client.tracking import SummaryWriter
 
 # Setup argument parsing for SASRec-specific hyperparameters
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', default='Movie_Lens')
-parser.add_argument('--batch_size', default=16, type=int)
+parser.add_argument('--dataset', default='Movies_and_TV')
+parser.add_argument('--batch_size', default=128, type=int)
 parser.add_argument('--lr', default=0.001, type=float)
 parser.add_argument('--maxlen', default=50, type=int)
 parser.add_argument('--hidden_units', default=50, type=int)
 parser.add_argument('--num_blocks', default=2, type=int)
-parser.add_argument('--num_epochs', default=10, type=int)
+parser.add_argument('--num_epochs', default=100, type=int)
 parser.add_argument('--num_heads', default=1, type=int)
 parser.add_argument('--dropout_rate', default=0.5, type=float)
 parser.add_argument('--l2_emb', default=0.0, type=float)
@@ -43,12 +43,14 @@ def main():
     print("Client "+client_name)
 
     if(args.dataset=='Movies_and_TV'):
-        text_file_path=f'/home/reuben/reuben_code/Pytorch/LLM-Rec-Sys/FedSasrec/data/amazon/{args.dataset}.txt'
+        text_file_path=f'{os.getcwd().split("/tmp")[0]}/data/amazon/Movies_and_TV.txt'
     elif(args.dataset=='CiteULike'):
-        text_file_path=f'/home/reuben/reuben_code/Pytorch/LLM-Rec-Sys/FedSasrec/data/CiteULike/output.txt'
+        text_file_path=f'{os.getcwd().split("/tmp")[0]}/data/CiteULike/CiteULikeoutput.txt'
     elif(args.dataset=='Movie_Lens'):
-        text_file_path=f'/home/reuben/reuben_code/Pytorch/LLM-Rec-Sys/FedSasrec/data/Movie_Lens/output2.txt'
+        text_file_path=f'{os.getcwd().split("/tmp")[0]}/data/Movie_Lens/Movie_Lens_output2.txt'
 
+    print(text_file_path)
+    
     # Check if the file exists
     if not os.path.exists(text_file_path):
         print(f"File {text_file_path} not found. Running preprocess function...")
@@ -92,8 +94,19 @@ def main():
     # Set up summary writer for logging
     summary_writer = SummaryWriter()
 
+
+
+
     # Federated Learning Loop
     while flare.is_running():
+        # Initialize metrics lists
+        epoch_list=[]
+        precision_list = []
+        recall_list = []
+        hit_rate_list = []
+        ndcg_list = []
+        f1_score_list = []
+        auc_list = []
         print("\nbefore recieve")
         input_model = flare.receive()
         print("\nafter recieve")
@@ -133,15 +146,46 @@ def main():
                     global_step = input_model.current_round * steps + epoch * num_batch + step
                     summary_writer.add_scalar(tag="loss_for_each_batch", scalar=loss.item(), global_step=global_step)
 
-        # Evaluate model
-        if epoch % 20 == 0 or epoch == 1:
-            model.eval()
-            print('Evaluating...')
-            t_test = evaluate(model, dataset, args)
-            t_valid = evaluate_valid(model, dataset, args)
-            print(f"Validation NDCG@10: {t_valid[0]}, HR@10: {t_valid[1]}")
-            print(f"Test NDCG@10: {t_test[0]}, HR@10: {t_test[1]}")
-            model.train()
+        # # Evaluate model
+        # if epoch % 20 == 0 or epoch == 1:
+        #     model.eval()
+        #     print('Evaluating...')
+        #     t_test = evaluate(model, dataset, args)
+        #     t_valid = evaluate_valid(model, dataset, args)
+        #     print(f"Validation NDCG@10: {t_valid[0]}, HR@10: {t_valid[1]}")
+        #     print(f"Test NDCG@10: {t_test[0]}, HR@10: {t_test[1]}")
+        #     model.train()
+
+
+            k = 20
+            steps_range = 5
+
+            if epoch % steps_range == 0 or epoch == 1:
+                model.eval()
+                # t_test = evaluate(model, dataset, args, k=20)
+                t_valid = evaluate_valid_at_k(model, dataset, args, k=k)
+
+                # Log the metrics
+                epoch_list.append(epoch)
+                precision_list.append(t_valid[2])
+                recall_list.append(t_valid[3])
+                hit_rate_list.append(t_valid[1])
+                ndcg_list.append(t_valid[0])
+                f1_score_list.append(t_valid[4])
+
+                model.train()
+        
+        # Save the metrics to a CSV file
+        metrics_df = pd.DataFrame({
+            "epoch": epoch_list,
+            f"precision_at_{k}": precision_list,
+            f"recall_at_{k}": recall_list,
+            f"hit_rate_at_{k}": hit_rate_list,
+            f"ndcg_at_{k}": ndcg_list,
+            f"f1_score_at_{k}": f1_score_list,
+        })
+        metrics_df.to_csv(f"/home/reuben/reuben_code/Pytorch/LLM-Rec-Sys/FedSasrec/data/file_saver_prime/metrics_{args.dataset}_{client_name}_{input_model.current_round}.csv", index=False)
+
 
         # Send the updated model back to the server
         output_model = flare.FLModel(
@@ -154,6 +198,7 @@ def main():
     # Clean up resources
     sampler.close()
     print("Training Complete")
+
 
 
 if __name__ == "__main__":

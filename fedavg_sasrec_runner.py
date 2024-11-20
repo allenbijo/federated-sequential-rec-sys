@@ -7,28 +7,8 @@ import json
 
 from nvflare.app_opt.pt.job_config.fed_avg import FedAvgJob
 from nvflare.job_config.script_runner import ScriptRunner
-# import torch
+from src.utils import data_partition
 
-# from dataclasses import dataclass
-
-# @dataclass
-# class SASRecArgs:
-#     dataset: str = 'Movies_and_TV'
-#     batch_size: int = 128
-#     lr: float = 0.001
-#     maxlen: int = 50
-#     hidden_units: int = 50
-#     num_blocks: int = 2
-#     num_epochs: int = 200
-#     num_heads: int = 1
-#     dropout_rate: float = 0.5
-#     l2_emb: float = 0.0
-#     device: str = 'cpu'
-#     inference_only: bool = False
-#     state_dict_path: str = None
-
-# # Instantiating the arguments
-# args = SASRecArgs()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', default='Movies_and_TV')
@@ -48,13 +28,22 @@ parser.add_argument('--state_dict_path', default=None, type=str)
 arg = parser.parse_args()
 
 if __name__ == "__main__":
-    n_clients = 3
+    n_clients = 1
     num_rounds = 2
     train_script = "src/client_script.py"
+    
+    if(arg.dataset=='Movies_and_TV'):
+        text_file_path=f'./data/amazon/Movies_and_TV.txt'
+    elif(arg.dataset=='CiteULike'):
+        text_file_path=f'./data/CiteULike/CiteULikeoutput.txt'
+    elif(arg.dataset=='Movie_Lens'):
+        text_file_path=f'./data/Movie_Lens/Movie_Lens_output2.txt'
+    
+    [_, _, _, usernum, itemnum] = data_partition(f'{arg.dataset}',text_file_path)
     # usernum = 311143
-    usernum = 6038
+    # usernum = 6038
     # itemnum = 86678
-    itemnum=3627
+    # itemnum=3627
 
     arg_handler = json.dumps(arg.__dict__)
 
@@ -70,7 +59,7 @@ if __name__ == "__main__":
         print("Adding client{}".format(i+1))
         executor = ScriptRunner(
             script=train_script,
-            script_args="", # f"--dataset=Movies_and_TV --batch_size=128 --lr=0.001 --maxlen=50 --hidden_units=50 --num_blocks=2 --num_epochs=200 --num_heads=1 --dropout_rate=0.5 --l2_emb=0.0 --device=cuda --inference_only=False --state_dict_path=None"
+            script_args=f"--dataset={arg.dataset}", # f"--dataset=Movies_and_TV --batch_size=128 --lr=0.001 --maxlen=50 --hidden_units=50 --num_blocks=2 --num_epochs=200 --num_heads=1 --dropout_rate=0.5 --l2_emb=0.0 --device=cuda --inference_only=False --state_dict_path=None"
         )
         print("Executor created")
         job.to(executor, f"site-{i+1}")
