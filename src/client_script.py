@@ -184,7 +184,7 @@ def main():
             f"ndcg_at_{k}": ndcg_list,
             f"f1_score_at_{k}": f1_score_list,
         })
-        metrics_df.to_csv(f"{os.getcwd().split("/tmp")[0]}/saved_data/metrics_{args.dataset}_{client_name}_{input_model.current_round}.csv", index=False)
+        metrics_df.to_csv(f"{os.getcwd().split('/tmp')[0]}/saved_data/metrics_{args.dataset}_{client_name}_{input_model.current_round}.csv", index=False)
 
 
         # Send the updated model back to the server
