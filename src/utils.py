@@ -328,7 +328,7 @@ def evaluate_valid_at_k(model, dataset, args, k=10):
             precision += num_relevant_and_recommended / num_recommended
             recall += num_relevant_and_recommended / num_relevant
         
-        valid_user += 1
+        # valid_user += 1
 
         if rank < 10:
             NDCG += 1 / np.log2(rank + 2)

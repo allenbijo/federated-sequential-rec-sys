@@ -45,7 +45,7 @@ def main():
     if(args.dataset=='Movies_and_TV'):
         text_file_path=f'{os.getcwd().split("/tmp")[0]}/data/amazon/Movies_and_TV.txt'
     elif(args.dataset=='CiteULike'):
-        text_file_path=f'{os.getcwd().split("/tmp")[0]}/data/CiteULike/CiteULikeoutput.txt'
+        text_file_path=f'{os.getcwd().split("/tmp")[0]}/data/CiteULike/output3.txt'
     elif(args.dataset=='Movie_Lens'):
         text_file_path=f'{os.getcwd().split("/tmp")[0]}/data/Movie_Lens/Movie_Lens_output2.txt'
 
