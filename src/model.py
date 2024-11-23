@@ -39,10 +39,10 @@ class PointWiseFeedForward(torch.nn.Module):
 
 # arg = parser.parse_args()
     
-class SASRec(torch.nn.Module):
+class FARF(torch.nn.Module):
     def __init__(self, user_num, item_num, arguer):
 
-        super(SASRec, self).__init__()
+        super(FARF, self).__init__()
 
 
         self.kwargs = {'user_num': user_num, 'item_num': item_num, 'args': arguer}

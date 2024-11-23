@@ -7,7 +7,7 @@ import pandas as pd
 from tqdm import tqdm
 import json
 
-from model import SASRec 
+from model import FARF 
 from data_preprocess import preprocess
 from utils import evaluate, evaluate_valid_at_k, data_partition, WarpSampler
 
@@ -68,7 +68,7 @@ def main():
     arg_handler = json.dumps(args.__dict__)
 
     l = arg_handler.replace('"', '&')[1:-1]
-    model = SASRec(usernum, itemnum, l).to(args.device)
+    model = FARF(usernum, itemnum, l).to(args.device)
 
     # Xavier initialization
     for name, param in model.named_parameters():
@@ -82,7 +82,7 @@ def main():
         try:
             kwargs, checkpoint = torch.load(args.state_dict_path, map_location=torch.device(args.device))
             kwargs['args'].device = args.device
-            model = SASRec(**kwargs).to(args.device)
+            model = FARF(**kwargs).to(args.device)
             model.load_state_dict(checkpoint)
         except:
             print('Failed loading state_dict:', args.state_dict_path)
