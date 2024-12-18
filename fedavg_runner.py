@@ -1,5 +1,4 @@
-# python3 fedavg_runner.py 
-#                                   --dataset=Movies_and_TV --batch_size=128 --lr=0.001 --maxlen=50 --hidden_units=50 --num_blocks=2 --num_epochs=200 --num_heads=1 --dropout_rate=0.5 --l2_emb=0.0 --device=cuda --inference_only=False --state_dict_path=None
+# python3 fedavg_runner.py --dataset=Movies_and_TV --batch_size=128 --lr=0.001 --maxlen=50 --hidden_units=50 --num_blocks=2 --num_epochs=200 --num_heads=1 --dropout_rate=0.5 --l2_emb=0.0 --device=cuda --inference_only=False --state_dict_path=None
 
 from src.model import FARF
 import argparse
