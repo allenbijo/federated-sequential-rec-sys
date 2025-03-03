@@ -23,8 +23,8 @@ The system predicts a user's next likely item based on historical interactions w
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Reuben-Stephen-John/Federated_Sequential_Rec_Sys.git
-cd Federated_Sequential_Rec_Sys
+git clone https://github.com/allenbijo/federated-sequential-rec-sys.git
+cd federated-sequential-rec-sys
 ```
 
 ### 2. Set Up the Virtual Environment and Install Dependencies
