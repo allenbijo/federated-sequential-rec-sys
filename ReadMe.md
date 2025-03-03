@@ -42,10 +42,6 @@ Then install the required packages:
 pip install -r requirements.txt
 ```
 
-```bash
-pip install -r requirements.txt
-```
-
 ### 3. Prepare the Data
 
 - Place datasets in the `data/` directory.
