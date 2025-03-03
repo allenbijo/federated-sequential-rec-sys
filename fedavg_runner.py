@@ -23,12 +23,15 @@ parser.add_argument('--l2_emb', default=0.0, type=float)
 parser.add_argument('--device', default='cuda', type=str)
 parser.add_argument('--inference_only', default=False, action='store_true')
 parser.add_argument('--state_dict_path', default=None, type=str)
+parser.add_argument('--num_clients', default=3, type=int)
+parser.add_argument('--num_rounds', default=2, type=int)
+
 
 arg = parser.parse_args()
 
 if __name__ == "__main__":
-    n_clients = 3
-    num_rounds = 2
+    n_clients = arg.num_clients
+    num_rounds = arg.num_rounds
     train_script = "src/client_script.py"
     
     if(arg.dataset=='Movies_and_TV'):
